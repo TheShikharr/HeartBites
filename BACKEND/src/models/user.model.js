@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -18,6 +18,22 @@ const userSchema = new mongoose.Schema({
     profilePic: {
         type: String,
         default: ""
+    },
+    gender: {
+        type: String,
+        enum: ["male", "female", "other"],
+    },
+    dob: {
+        type: Date,
+    },
+    bio: {
+        type: String,
+        default: ""
+    },
+    genderPreference: {
+        type: String,
+        enum: ["male", "female", "other", "everyone"],
+        default: "everyone"
     },
 }, { timestamps: true })
 
