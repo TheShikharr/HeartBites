@@ -110,15 +110,26 @@ export const updateProfile = async (req, res) => {
 
     try {
         
-        const { profilePic } = req.body
+        const { profilePic, gender, dob, bio, genderPreference } = req.body
         const userID = req.user._id
 
-        if(!profilePic) {
-            return res.status(400).json({ message: "ProfilePic required" })
+        if( !gender ||
+            !dob ||
+            !bio ||
+            !genderPreference
+        ) {
+            return res.status(400).json({ message: "All feilds are required" })
         }
 
-        const uploadResponse = await cloudinary.uploader.upload(profilePic)
-        const updatedUser = await User.findByIdAndUpdate(userID, { profilePic: uploadResponse.secure_url }, { new: true })
+
+        let updatedFields = { gender, dob, bio, genderPreference }
+
+        if(profilePic) {
+            const uploadResponse = await cloudinary.uploader.upload(profilePic)
+            updatedFields.profilePic = uploadResponse.secure_url
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userID, updatedFields, { new: true })
 
         res.status(200).json(updatedUser)
 
