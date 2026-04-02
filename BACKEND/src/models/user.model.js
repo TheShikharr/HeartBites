@@ -35,6 +35,14 @@ const userSchema = new mongoose.Schema({
         enum: ["male", "female", "other", "everyone"],
         default: "everyone"
     },
+    likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
+    dislikes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    }],
 }, { timestamps: true })
 
 const User = mongoose.model("User", userSchema)
