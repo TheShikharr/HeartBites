@@ -1,6 +1,6 @@
-import User from "../models/user.model.js"
 import Match from "../models/match.model.js"
 import Message from "../models/message.model.js"
+import { io, getReceiverSocketID } from "../lib/socket.js"
 
 export const sendMessage = async(req, res) => {
     try {
@@ -27,6 +27,11 @@ export const sendMessage = async(req, res) => {
             receiverID,
             content,
         })
+
+        const receiverSocketID = getReceiverSocketID(receiverID)
+        if(receiverSocketID) {
+            io.to(receiverSocketID).emit("newMessage", newMessage)
+        }
 
         res.status(201).json({ message: newMessage })
 
