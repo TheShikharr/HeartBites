@@ -35,7 +35,7 @@ const LoginPage = () => {
 
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <h1 className="text-5xl font-dancingscript text-red-500 mb-2">HeartBites</h1>
+                    <h1 className="text-5xl font-lobster text-red-500 mb-2">HeartBites</h1>
                     <h2 className="text-xl font-semibold text-gray-700 mb-1">Welcome Back</h2>
                     <p className="text-gray-500 text-sm">Login to find your match</p>
                 </div>

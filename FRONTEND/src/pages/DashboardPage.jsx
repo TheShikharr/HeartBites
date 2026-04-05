@@ -81,7 +81,7 @@ const DashboardPage = () => {
 
             {/* Navbar */}
             <nav className="flex justify-between items-center px-8 py-5 bg-white border-b border-gray-100 shadow-sm">
-                <h1 className="text-4xl font-dancingscript text-purple-600">
+                <h1 className="text-4xl font-lobster text-purple-600">
                     HeartBites
                 </h1>
                 <div className="flex items-center gap-4">
