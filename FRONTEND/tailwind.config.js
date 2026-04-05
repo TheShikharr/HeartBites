@@ -8,6 +8,7 @@ export default {
     extend: {
       fontFamily: {
         dancingscript: ["Dancing Script", "cursive"],
+        lobster: ["Lobster Two"],
       }
     },
   },
