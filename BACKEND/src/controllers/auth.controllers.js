@@ -43,24 +43,13 @@ export const signup = async (req, res) => {
         await newUser.save()
 
         // ✅ debug logs
-        console.log("EMAIL_HOST:", process.env.EMAIL_HOST)
-        console.log("EMAIL_PORT:", process.env.EMAIL_PORT)
         console.log("EMAIL_USER:", process.env.EMAIL_USER)
         console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS)
 
-        // ✅ separate try/catch for email
-        try {
-            await sendEmailOTP(email, otp)
-            console.log("OTP email sent successfully!")
-        } catch (emailError) {
-            console.log("Email sending failed:", emailError.message)
-            // still return success — user is saved
-            // they can use resend OTP
-            return res.status(201).json({ 
-                message: "Account created but email failed. Use resend OTP.",
-                email,
-            })
-        }
+        // ✅ send email asynchronously
+        sendEmailOTP(email, otp)
+            .then(() => console.log("OTP email sent successfully!"))
+            .catch(emailError => console.log("Email sending failed:", emailError.message))
 
         res.status(201).json({ 
             message: "OTP sent to your email. Please verify to continue.",
@@ -156,9 +145,11 @@ export const resendOTP = async (req, res) => {
         user.otpExpiry = otpExpiry
         await user.save()
 
-        await sendEmailOTP(email, otp)
+        sendEmailOTP(email, otp)
+            .then(() => console.log("Resend OTP email sent successfully!"))
+            .catch(emailError => console.log("Resend email failed:", emailError.message))
 
-        res.status(200).json({ message: "New OTP sent to your email" })
+        res.status(200).json({ message: "New OTP is being sent to your email" })
 
     } catch (error) {
         console.log("Error in resendOTP Controllers: ", error.message)
@@ -209,7 +200,12 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
     try {
 
-        res.cookie("jwt", "", { maxAge: 0 })
+        res.cookie("jwt", "", { 
+            maxAge: 0,
+            httpOnly: true,
+            sameSite: "None",
+            secure: true,
+        })
         res.status(200).json({ message: "Logged Out Successfully" })
 
     } catch (error) {
@@ -233,7 +229,7 @@ export const updateProfile = async (req, res) => {
             !bio ||
             !genderPreference
         ) {
-            return res.status(400).json({ message: "All feilds are required" })
+            return res.status(400).json({ message: "All fields are required" })
         }
 
 
