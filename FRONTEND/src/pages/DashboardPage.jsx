@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import { axiosInstance } from "../lib/axios.js"
 import { useAuthStore } from "../store/useAuthStore"
 import { X, Heart, Star, ThumbsUp, ThumbsDown } from "lucide-react"
 
@@ -20,15 +20,20 @@ const DashboardPage = () => {
     const fetchUsers = async () => {
         setLoading(true)
         try {
-            const res = await axios.get(
-                "http://localhost:9000/api/match",
-                { withCredentials: true }
-            )
+
+            const res = await axiosInstance.get("/match")
+
             setUsers(res.data.users)
+            setCurrentIndex(0)
+
         } catch (error) {
+
             console.log("Error fetching users: ", error.message)
+
         } finally {
+
             setLoading(false)
+
         }
     }
 
@@ -36,17 +41,19 @@ const DashboardPage = () => {
         setSwipeDirection("right")
         setTimeout(async () => {
             try {
-                const res = await axios.post(
-                    `http://localhost:9000/api/match/swipe-right/${userId}`,
-                    {},
-                    { withCredentials: true }
-                )
+
+                const res = await axiosInstance.post(`/match/swipe-right/${userId}`, {})
+
                 if (res.data.isMatch) {
-                    alert("🎉 It's a Match!")
+                    alert("It's a Match!")
                 }
+
             } catch (error) {
+
                 console.log("Error swiping right: ", error.message)
+
             }
+
             setCurrentIndex((prev) => prev + 1)
             setSwipeDirection(null)
         }, 500)
@@ -56,13 +63,13 @@ const DashboardPage = () => {
         setSwipeDirection("left")
         setTimeout(async () => {
             try {
-                await axios.post(
-                    `http://localhost:9000/api/match/swipe-left/${userId}`,
-                    {},
-                    { withCredentials: true }
-                )
+
+                await axiosInstance.post(`/match/swipe-left/${userId}`, {})
+
             } catch (error) {
+
                 console.log("Error swiping left: ", error.message)
+                
             }
             setCurrentIndex((prev) => prev + 1)
             setSwipeDirection(null)
@@ -105,6 +112,13 @@ const DashboardPage = () => {
                         className="text-gray-500 hover:text-purple-600 text-sm font-medium transition"
                     >
                         Matches
+                    </button>
+                    <button
+                        onClick={() => navigate("/update-profile")}
+                        className="flex items-center gap-1.5 text-gray-500 hover:text-purple-700 text-sm font-medium transition"
+                    >
+                        
+                        Edit Profile
                     </button>
                     <button
                         onClick={handleLogout}
