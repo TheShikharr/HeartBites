@@ -1,21 +1,13 @@
-import nodemailer from "nodemailer"
+import { Resend } from "resend"
 import dotenv from "dotenv"
 
 dotenv.config()
 
-export const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    }
-})
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export const sendEmailOTP = async (email, otp) => {
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
+    await resend.emails.send({
+        from: "HeartBites <onboarding@resend.dev>",
         to: email,
         subject: "HeartBites — Email Verification OTP",
         html: `
@@ -27,7 +19,5 @@ export const sendEmailOTP = async (email, otp) => {
             <p>This OTP will expire in <b>10 minutes</b>.</p>
             <p>If you did not create an account, please ignore this email.</p>
         `
-    }
-
-    await transporter.sendMail(mailOptions)
+    })
 }
