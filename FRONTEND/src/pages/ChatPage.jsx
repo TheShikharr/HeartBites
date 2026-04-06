@@ -23,7 +23,9 @@ const ChatPage = () => {
 
         // ✅ listen for new messages in real time
         socket.on("newMessage", (message) => {
-            setMessages((prev) => [...prev, message])
+            if (message.senderID === id) {
+                setMessages((prev) => [...prev, message])
+            }
         })
 
         // ✅ cleanup on unmount

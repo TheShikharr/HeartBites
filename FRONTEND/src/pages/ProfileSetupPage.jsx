@@ -45,7 +45,9 @@ const ProfileSetupPage = () => {
 
         try {
 
-            await axiosInstance.put("/auth/update-profile", { ...formData, profilePic })
+            const res = await axiosInstance.put("/auth/update-profile", { ...formData, profilePic })
+
+            useAuthStore.getState().setAuthUser(res.data)
 
             navigate("/")
 
