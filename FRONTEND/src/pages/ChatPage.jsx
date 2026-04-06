@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import axios from "axios"
+import { axiosInstance } from "../lib/axios.js"
 import { useAuthStore } from "../store/useAuthStore"
 import { ArrowLeft, Send } from "lucide-react"
+import { socket } from "../lib/socket.js"
 
 const ChatPage = () => {
     const [messages, setMessages] = useState([])
@@ -19,6 +20,17 @@ const ChatPage = () => {
     useEffect(() => {
         fetchMatchedUser()
         fetchMessages()
+
+        // ✅ listen for new messages in real time
+        socket.on("newMessage", (message) => {
+            setMessages((prev) => [...prev, message])
+        })
+
+        // ✅ cleanup on unmount
+        return () => {
+            socket.off("newMessage")
+        }
+
     }, [id])
 
     useEffect(() => {
@@ -31,11 +43,11 @@ const ChatPage = () => {
 
     const fetchMatchedUser = async () => {
         try {
-            const res = await axios.get(
-                "http://localhost:9000/api/match/matches",
-                { withCredentials: true }
-            )
+
+            const res = await axiosInstance.get("/match/matches")
+
             const matches = res.data.matches
+
             let found = null
             matches.forEach(match => {
                 const user = match.users.find(
@@ -43,20 +55,24 @@ const ChatPage = () => {
                 )
                 if (user) found = user
             })
+
             setMatchedUser(found)
+
         } catch (error) {
+
             console.log("Error fetching matched user: ", error.message)
+
         }
     }
 
     const fetchMessages = async () => {
         setLoading(true)
         try {
-            const res = await axios.get(
-                `http://localhost:9000/api/messages/${id}`,
-                { withCredentials: true }
-            )
+
+            const res = await axiosInstance.get(`/messages/${id}`)
+
             setMessages(res.data.messages)
+
         } catch (error) {
             console.log("Error fetching messages: ", error.message)
         } finally {
@@ -70,13 +86,12 @@ const ChatPage = () => {
         setSending(true)
 
         try {
-            const res = await axios.post(
-                `http://localhost:9000/api/messages/send/${id}`,
-                { content: newMessage },
-                { withCredentials: true }
-            )
+
+            const res = await axiosInstance.post(`/messages/send/${id}`, { content: newMessage })
+
             setMessages((prev) => [...prev, res.data.message])
             setNewMessage("")
+
         } catch (error) {
             console.log("Error sending message: ", error.message)
         } finally {
@@ -84,17 +99,13 @@ const ChatPage = () => {
         }
     }
 
-    // ✅ safe sender check helper
+    // safe sender check helper
     const isSentByMe = (msg) => {
-        if (!authUser || !msg.senderId) return false
-        const senderId = msg.senderId?._id
-            ? msg.senderId._id.toString()
-            : msg.senderId.toString()
+        if (!authUser || !msg.senderID) return false
+        const senderId = msg.senderID?._id
+            ? msg.senderID._id.toString()
+            : msg.senderID.toString()
 
-        console.log("senderId:", senderId)
-        console.log("authUser._id:", authUser._id)
-        console.log("match:", senderId === authUser._id.toString())
-        
         return senderId === authUser._id.toString()
     }
 
@@ -180,8 +191,8 @@ const ChatPage = () => {
                                 <div className={`max-w-[70%] flex flex-col gap-1 ${isMe ? "items-end" : "items-start"}`}>
                                     <div
                                         className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMe
-                                                ? "bg-purple-700 text-white rounded-br-sm"
-                                                : "bg-white text-gray-800 rounded-bl-sm border border-gray-100 shadow-sm"
+                                            ? "bg-purple-700 text-white rounded-br-sm"
+                                            : "bg-white text-gray-800 rounded-bl-sm border border-gray-100 shadow-sm"
                                             }`}
                                     >
                                         {msg.content}

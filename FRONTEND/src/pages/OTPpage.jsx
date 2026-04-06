@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import axios from "axios"
+import { axiosInstance } from "../lib/axios.js"
 import { useAuthStore } from "../store/useAuthStore"
 
 const OTPpage = () => {
@@ -25,11 +25,9 @@ const OTPpage = () => {
         setLoading(true)
 
         try {
-            const res = await axios.post(
-                "http://localhost:9000/api/auth/verify-otp",
-                { email, otp },
-                { withCredentials: true }
-            )
+
+            const res = await axiosInstance.post("/auth/verify-otp", { email, otp })
+            
 
             // ✅ set user in zustand store
             setAuthUser(res.data)
@@ -37,9 +35,13 @@ const OTPpage = () => {
             navigate("/profile-setup")
 
         } catch (error) {
+
             setError(error.response?.data?.message || "Something went wrong")
+
         } finally {
+
             setLoading(false)
+
         }
     }
 
@@ -49,16 +51,19 @@ const OTPpage = () => {
         setResendLoading(true)
 
         try {
-            await axios.post(
-                "http://localhost:9000/api/auth/resend-otp",
-                { email },
-                { withCredentials: true }
-            )
+
+            await axiosInstance.post("/auth/resend-otp", { email })
+
             setResendMessage("New OTP sent to your Email")
+
         } catch (error) {
+
             setError(error.response?.data?.message || "Something went wrong")
+
         } finally {
+
             setResendLoading(false)
+            
         }
     }
 

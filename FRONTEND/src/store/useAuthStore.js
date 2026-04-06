@@ -1,5 +1,20 @@
 import { create } from "zustand"
-import axios from "axios"
+import { axiosInstance } from "../lib/axios.js"
+import { socket } from "../lib/socket.js"
+
+const connectSocket = (userId) => {
+    if(!socket.connected) {
+        socket.connect()
+    }
+    // ✅ wait for connection before emitting
+    socket.on("connect", () => {
+        socket.emit("userConnected", userId)
+    })
+    // ✅ if already connected just emit directly
+    if(socket.connected) {
+        socket.emit("userConnected", userId)
+    }
+}
 
 export const useAuthStore = create((set) => ({
     authUser: null,
@@ -10,61 +25,76 @@ export const useAuthStore = create((set) => ({
 
     checkAuth: async () => {
         set({ isLoading: true })
+
         try {
-            const res = await axios.get(
-                "http://localhost:9000/api/auth/check",
-                { withCredentials: true }
-            )
+
+            const res = await axiosInstance.get("/auth/check")
+
             set({ authUser: res.data, isLoading: false })
+
+            connectSocket(res.data._id)  // ✅ use helper
+
         } catch (error) {
+
             set({ authUser: null, isLoading: false })
+
         }
     },
 
-    // ✅ add login function
     login: async (formData) => {
         set({ isLoading: true })
+
         try {
-            const res = await axios.post(
-                "http://localhost:9000/api/auth/login",
-                formData,
-                { withCredentials: true }
-            )
+
+            const res = await axiosInstance.post("/auth/login", formData)
+
             set({ authUser: res.data, isLoading: false })
+
+            connectSocket(res.data._id)  // ✅ use helper
             return { success: true }
+
         } catch (error) {
+
             set({ isLoading: false })
-            return { success: false, message: error.response?.data?.message || "Something went wrong" }
+
+            return { 
+                success: false, 
+                message: error.response?.data?.message || "Something went wrong" 
+            }
         }
     },
 
-    // ✅ add signup function
     signup: async (formData) => {
         set({ isLoading: true })
         try {
-            const res = await axios.post(
-                "http://localhost:9000/api/auth/signup",
-                formData,
-                { withCredentials: true }
-            )
+
+            await axiosInstance.post("/auth/signup", formData)
+
             set({ isLoading: false })
             return { success: true }
+
         } catch (error) {
+
             set({ isLoading: false })
-            return { success: false, message: error.response?.data?.message || "Something went wrong" }
+            return { 
+                success: false, 
+                message: error.response?.data?.message || "Something went wrong" 
+            }
         }
     },
 
     logout: async () => {
         try {
-            await axios.post(
-                "http://localhost:9000/api/auth/logout",
-                {},
-                { withCredentials: true }
-            )
+
+            await axiosInstance.post("/auth/logout", {})
+
             set({ authUser: null })
+            socket.disconnect()
+
         } catch (error) {
+
             console.log("Logout error: ", error.message)
+
         }
     },
 }))
