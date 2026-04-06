@@ -11,11 +11,9 @@ const generateOTP = () => {
 
 
 export const signup = async (req, res) => {
-
-    const {fullName, email, password} = req.body
+    const { fullName, email, password } = req.body
 
     try {
-
         if(!fullName || !email || !password) {
             return res.status(400).json({ message: "All fields are required" })
         }
@@ -25,13 +23,11 @@ export const signup = async (req, res) => {
         }
 
         const user = await User.findOne({ email })
-
         if(user) return res.status(400).json({ message: "Email already exists" })
 
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
 
-        // Generate OTP
         const otp = generateOTP()
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
@@ -46,22 +42,36 @@ export const signup = async (req, res) => {
 
         await newUser.save()
 
-        await sendEmailOTP(email, otp)
+        // ✅ debug logs
+        console.log("EMAIL_HOST:", process.env.EMAIL_HOST)
+        console.log("EMAIL_PORT:", process.env.EMAIL_PORT)
+        console.log("EMAIL_USER:", process.env.EMAIL_USER)
+        console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS)
+
+        // ✅ separate try/catch for email
+        try {
+            await sendEmailOTP(email, otp)
+            console.log("OTP email sent successfully!")
+        } catch (emailError) {
+            console.log("Email sending failed:", emailError.message)
+            // still return success — user is saved
+            // they can use resend OTP
+            return res.status(201).json({ 
+                message: "Account created but email failed. Use resend OTP.",
+                email,
+            })
+        }
 
         res.status(201).json({ 
             message: "OTP sent to your email. Please verify to continue.",
             email,
         })
 
-
     } catch (error) {
-
-        console.log("Error in SignUP Controllers: ", error.message);
+        console.log("Error in SignUP Controllers: ", error.message)
         res.status(500).json({ message: "Internal Server Error" })
-        
     }
 }
-
 
 export const verifyOTP = async (req, res) => {
     const { email, otp } = req.body
