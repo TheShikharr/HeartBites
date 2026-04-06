@@ -33,6 +33,7 @@ function App() {
                 <Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
                 <Route path='/verify-otp' element={<OTPpage />} />
                 <Route path='/profile-setup' element={authUser ? <ProfileSetupPage /> : <Navigate to="/login" />} />
+                <Route path='/update-profile' element={authUser ? <ProfileSetupPage /> : <Navigate to="/login" />} />
                 <Route path='/matches' element={authUser ? <MatchesPage /> : <Navigate to="/login" />} />
                 <Route path='/chat/:id' element={authUser ? <ChatPage /> : <Navigate to="/login" />} />
             </Routes>
