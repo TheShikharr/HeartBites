@@ -17,52 +17,56 @@ const calculatedAge = (dob) => {
 
 export const getUserProfiles = async (req, res) => {
     try {
-        
         const currentUser = await User.findById(req.user._id)
 
         const existingMatches = await Match.find({ users: req.user._id })
-
         const matchedUserIDs = existingMatches.map((match) =>
-                match.users.find(id => id.toString() !== req.user._id.toString())
+            match.users.find(id => id.toString() !== req.user._id.toString())
         )
+
+        // ✅ convert all IDs to strings for proper comparison
+        const excludeIDs = [
+            ...currentUser.likes.map(id => id.toString()),
+            ...currentUser.dislikes.map(id => id.toString()),
+            ...matchedUserIDs.map(id => id.toString()),
+            req.user._id.toString()
+        ]
+
+        console.log("Excluding IDs:", excludeIDs)  // ✅ debug
 
         const users = await User.find({
             $and: [
-                { _id: { $ne: currentUser._id } },
-                { id: { $nin: currentUser.likes } },
-                { id: { $nin: currentUser.dislikes } },
-                { id: { $nin: matchedUserIDs } },
+                { _id: { $nin: excludeIDs } },      // ✅ use string array
                 { gender: currentUser.genderPreference === "everyone"
-                    ? { $in: ["male", "female", "other"] } : currentUser.genderPreference
-                 }
+                    ? { $in: ["male", "female", "other"] }
+                    : currentUser.genderPreference
+                }
             ]
         }).select("fullName profilePic bio gender dob")
 
         const filteredUsers = users
-        .filter( u => u._id.toString() !== req.user._id.toString() )
-        .map(u => ({
-            _id: u._id,
-            fullName: u.fullName,
-            profilePic: u.profilePic,
-            gender: u.gender,
-            bio: u.bio,
-            age: calculatedAge(u.dob)
-        }))
+            .filter(u => u._id.toString() !== req.user._id.toString())
+            .map(u => ({
+                _id: u._id,
+                fullName: u.fullName,
+                profilePic: u.profilePic,
+                gender: u.gender,
+                bio: u.bio,
+                age: calculatedAge(u.dob)
+            }))
 
         res.status(200).json({ users: filteredUsers })
 
     } catch (error) {
-
         console.log("Error in getUserProfiles controller: ", error.message)
         res.status(500).json({ message: "Internal Server Error" })
-
     }
 }
 
 export const getMatches = async (req, res) => {
     try {
 
-        const matches = await Match.find({ users: req.user._id }).populate("users", "fullName profilePic dob gender")
+        const matches = await Match.find({ users: req.user._id }).populate("users", "fullName profilePic dob gender bio")
 
         const formattedMatches = matches.map( match => ({
             _id: match._id,
