@@ -2,7 +2,7 @@ import { io } from "socket.io-client"
 
 const SOCKET_URL = import.meta.env.MODE === "production"
     ? "https://heartbites-production.up.railway.app"
-    : "http://localhost:9000"
+    : "http://localhost:8080"
 
 export const socket = io(SOCKET_URL, {
     autoConnect: false,
