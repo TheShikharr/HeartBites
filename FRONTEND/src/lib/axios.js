@@ -5,4 +5,4 @@ export const axiosInstance = axios.create({
         ? "https://heartbites-production.up.railway.app/api"  // ✅ replace with your render URL
         : "http://localhost:9000/api",
     withCredentials: true,
-})
+})  
