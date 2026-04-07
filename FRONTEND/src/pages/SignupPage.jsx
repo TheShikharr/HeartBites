@@ -1,8 +1,10 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { axiosInstance } from "../lib/axios.js"
+import { useAuthStore } from "../store/useAuthStore.js"
 
 const SignupPage = () => {
+    const { signup } = useAuthStore()
+
     const [formData, setFormData] = useState({
         fullName: "",
         email: "",
@@ -18,25 +20,24 @@ const SignupPage = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
+    const { signup } = useAuthStore()
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError("")
         setLoading(true)
 
-        try {
+        const result = await signup(formData)
 
-            await axiosInstance.post("/auth/signup", formData)
-
-            navigate("/verify-otp", { state: { email: formData.email } })
-
-        } catch (error) {
-
-            setError(error.response?.data?.message || "Something went wrong")
-
-        } finally {
-            setLoading(false)
+        if (result.success) {
+            navigate("/profile-setup")
+        } else {
+            setError(result.message)
         }
+
+        setLoading(false)
     }
+
     return (
         <>
             <div className="min-h-screen bg-gradient-to-br from-pink-100 to-red-100 flex items-center justify-center p-4">
@@ -114,7 +115,7 @@ const SignupPage = () => {
                             disabled={loading}
                             className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50"
                         >
-                            {loading ? "Sending OTP..." : "Create Account"}
+                            {loading ? "Creating Account..." : "Create Account"}
                         </button>
                     </form>
 

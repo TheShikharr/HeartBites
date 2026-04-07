@@ -4,7 +4,6 @@ import { useAuthStore } from './store/useAuthStore'
 
 import SignupPage from './pages/SignupPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
-import OTPpage from './pages/OTPpage.jsx'
 import ProfileSetupPage from './pages/ProfileSetupPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import MatchesPage from './pages/MatchesPage.jsx'
@@ -31,7 +30,6 @@ function App() {
                 <Route path='/' element={authUser ? <DashboardPage /> : <Navigate to="/login" />} />
                 <Route path='/signup' element={!authUser ? <SignupPage /> : <Navigate to="/" />} />
                 <Route path='/login' element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
-                <Route path='/verify-otp' element={<OTPpage />} />
                 <Route path='/profile-setup' element={authUser ? <ProfileSetupPage /> : <Navigate to="/login" />} />
                 <Route path='/update-profile' element={authUser ? <ProfileSetupPage /> : <Navigate to="/login" />} />
                 <Route path='/matches' element={authUser ? <MatchesPage /> : <Navigate to="/login" />} />
