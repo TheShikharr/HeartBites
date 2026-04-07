@@ -20,7 +20,6 @@ const SignupPage = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
     }
 
-    const { signup } = useAuthStore()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
