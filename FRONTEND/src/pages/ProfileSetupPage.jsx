@@ -41,25 +41,32 @@ const ProfileSetupPage = () => {
     const handleSubmit = async(e) => {
         e.preventDefault()
         setError("")
+
+        // Age validation
+        const birthDate = new Date(formData.dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        if (age < 18) {
+            setError("You must be at least 18 years old to use HeartBites")
+            return
+        }
+
         setLoading(true)
 
         try {
-
             const res = await axiosInstance.put("/auth/update-profile", { ...formData, profilePic })
-
             useAuthStore.getState().setAuthUser(res.data)
-
             navigate("/")
-
         } catch (error) {
-
             console.log("Full error:", error)
             setError(error.response?.data?.message || "Something went wrong")
-
         } finally {
-
             setLoading(false)
-            
         }
     }
 
@@ -142,6 +149,7 @@ const ProfileSetupPage = () => {
                             name="dob"
                             value={formData.dob}
                             onChange={handleChange}
+                            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300"
                             required
                         />

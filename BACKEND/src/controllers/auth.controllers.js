@@ -115,6 +115,19 @@ export const updateProfile = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" })
         }
 
+        // Age validation
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        if (age < 18) {
+            return res.status(400).json({ message: "You must be at least 18 years old" });
+        }
+
 
         let updatedFields = { gender, dob, bio, genderPreference }
 
