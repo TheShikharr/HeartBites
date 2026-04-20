@@ -20,11 +20,13 @@ export const getUserProfiles = async (req, res) => {
         const currentUser = await User.findById(req.user._id)
 
         const existingMatches = await Match.find({ users: req.user._id })
+
+        // ["A", "B"].find(id !== "A") → "B"
         const matchedUserIDs = existingMatches.map((match) =>
             match.users.find(id => id.toString() !== req.user._id.toString())
         )
 
-        // ✅ convert all IDs to strings for proper comparison
+        // Fetch users whose IDs are NOT in this list
         const excludeIDs = [
             ...currentUser.likes.map(id => id.toString()),
             ...currentUser.dislikes.map(id => id.toString()),
@@ -32,11 +34,12 @@ export const getUserProfiles = async (req, res) => {
             req.user._id.toString()
         ]
 
-        console.log("Excluding IDs:", excludeIDs)  // ✅ debug
+        console.log("Excluding IDs:", excludeIDs)  // debug
 
+        // Fetch users who are new (not interacted) and match gender preference, and return only necessary fields.
         const users = await User.find({
-            $and: [
-                { _id: { $nin: excludeIDs } },      // ✅ use string array
+            $and: [                                    // $and -> both conditions must be true
+                { _id: { $nin: excludeIDs } },         // $nin = “not in”
                 { gender: currentUser.genderPreference === "everyone"
                     ? { $in: ["male", "female", "other"] }
                     : currentUser.genderPreference
@@ -63,10 +66,12 @@ export const getUserProfiles = async (req, res) => {
     }
 }
 
+
 export const getMatches = async (req, res) => {
     try {
 
         const matches = await Match.find({ users: req.user._id }).populate("users", "fullName profilePic dob gender bio")
+                                                                // replaces user IDs with actual user data
 
         const formattedMatches = matches.map( match => ({
             _id: match._id,
@@ -90,11 +95,20 @@ export const getMatches = async (req, res) => {
     }
 }
 
+
 export const swipeRight = async(req, res) => {
     try {
 
         const currentUser = await User.findById(req.user._id)
-        const likedUser = await User.findById(req.params.id)
+        const likedUser = await User.findById(req.params.id) 
+        // Comes from the URL
+        // Example route:
+        // POST /api/users/swipe-right/:id
+
+        // If you hit:
+        // /api/users/swipe-right/12345
+        // Then:
+        // req.params.id = "12345"
 
         if(!likedUser) {
             return res.status(404).json({ message: "User not found" })
@@ -124,6 +138,7 @@ export const swipeRight = async(req, res) => {
 
     }
 }
+
 
 export const swipeLeft = async(req, res) => {
     try {

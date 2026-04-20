@@ -44,6 +44,7 @@ export const sendMessage = async(req, res) => {
     }
 }
 
+
 export const getMessage = async(req, res) => {
     try {
 
@@ -64,7 +65,8 @@ export const getMessage = async(req, res) => {
                 { senderID: senderID, receiverID: receiverID },
                 { senderID: receiverID, receiverID: senderID },
             ]
-        }).sort({ createdAt: 1 })
+        }).sort({ createdAt: 1 })         // 1 = ascending
+                                          // Oldest → newest (chat order)
 
         res.status(200).json({ messages })
         
